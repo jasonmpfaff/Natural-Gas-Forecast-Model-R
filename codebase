@@ -1,0 +1,163 @@
+install.packages("forecast")
+library(forecast)
+install.packages("ggplot2")
+library(ggplot2)
+install.packages("caret")
+library("caret")
+
+##Read in data##
+Gas_Price<-scan("price.csv")
+Gas_Volume<-scan("volume.csv")
+Gas_Change<-scan("change.csv")
+
+##Create Time Series Objects##
+Price_of_Gas<-ts(Gas_Price, start=c(01/10/97), frequency=52)
+Volume_of_Gas<-ts(Gas_Volume, start=c(01/01/10), frequency=52)
+Change_of_Gas<-ts(Gas_Change, start=c(01/08/10), frequency=52)
+
+##check data load##
+plot(Change_of_Gas, main="Historical Change")
+plot(Volume_of_Gas, "Historical Volume")
+plot(Price_of_Gas, "Historical Price")
+
+##model 1##
+##NatGas Price
+##Holt Winters Exponential Smothing Model##
+Gas_Price_forecast<-HoltWinters(Price_of_Gas, gamma=TRUE)
+Gas_coeffs<-coefficients(Gas_Price_forecast)
+plot(decompose(Price_of_Gas), xlab="Price")
+autoplot(forecast(Gas_Price_forecast,52), main="Seasoal Exponential Smoothing Price Model", xaxt="n", col="red", ylab="Price")
+points(Price_of_Gas, col="blue", bg="gray", pch=10)
+price_final<-forecast(Gas_Price_forecast, h=52)
+plot(price_final)
+autoplot(price_final, main="Exponential Smoothing Price Model")
+price_final
+
+##model 2##
+##NatGas Price
+##ARIMA
+gas_price_timeseries_arima<-arima(Price_of_Gas, order=c(3,0,3))
+gas_price_timeseries_arima
+autoplot(gas_price_timeseries_arima)
+gas_price_timeseries_forecasts<-forecast(gas_price_timeseries_arima, h=52)
+autoplot(gas_price_timeseries_forecasts, main="ARIMA Price Forecast")
+gas_price_timeseries_forecasts
+
+
+##model 3##
+##NatGas Price
+##NNET
+price_model<-scan("price.csv")
+price_fit<-nnetar(price_model)
+price_finalfit<-forecast(price_fit, h=52)
+price_finalfit
+autoplot(forecast(price_finalfit), main="Neural Network Model -  Price")
+
+##model 10##
+##final price frame##
+price_frame<-data.frame(price_finalfit, gas_price_timeseries_forecasts, price_final)
+price_frame2<-data.frame(price_frame$Point.Forecast,price_frame$Point.Forecast.1, price_frame$Point.Forecast.2)
+price_frame2                      
+price_forecast<-rowMeans(price_frame2, na.rm = FALSE)
+price_forecast
+price_forecast2<-as.data.frame(price_forecast)
+price_forecast2
+
+##model 4##
+##NatGas Volume
+##Holt Winters Exponential Smothing Model##
+Gas_Volume_forecast<-HoltWinters(Volume_of_Gas, gamma=TRUE)
+Gas_Volume_coeffs<-coefficients(Gas_Volume_forecast)
+plot(decompose(Volume_of_Gas), xlab="Revenue")
+autoplot(forecast(Gas_Volume_forecast,52), main="Seasonal Exponental Smoothing Model - Volume", xaxt="n", col="red", ylab="Volume")
+points(Volume_of_Gas, col="blue", bg="gray", pch=10)
+volume_final<-forecast(Gas_Volume_forecast, h=52)
+plot(volume_final)
+autoplot(volume_final, main="Seasonal Exponential Smoothing Model - Volume")
+volume_final
+
+##model 5##
+##NatGas Volume
+##ARIMA
+gas_volume_timeseries_arima<-arima(Volume_of_Gas, order=c(3,0,3))
+gas_volume_timeseries_arima
+autoplot(gas_volume_timeseries_arima)
+gas_volume_timeseries_forecasts<-forecast(gas_volume_timeseries_arima, h=52)
+autoplot(gas_volume_timeseries_forecasts, main="ARMA model - Volume")
+gas_volume_timeseries_forecasts
+
+
+##model 6##
+##NatGas volume
+##NNET
+volume_model<-scan("volume.csv")
+volume_fit<-nnetar(volume_model)
+volume_finalfit<-forecast(volume_fit, h=52)
+volume_finalfit
+autoplot(forecast(volume_finalfit), main="Neural Network model = Volume")
+
+##model 11##
+##final volume_frame##
+volume_frame<-data.frame(volume_finalfit, gas_volume_timeseries_forecasts, volume_final)
+volume_frame2<-data.frame(volume_frame$Point.Forecast,volume_frame$Point.Forecast.1, volume_frame$Point.Forecast.2)
+volume_frame2                      
+volume_forecast<-rowMeans(volume_frame2, na.rm = FALSE)
+volume_forecast
+volume_forecast2<-as.data.frame(volume_forecast)
+volume_forecast2
+
+
+##model 7##
+##NatGas change
+##Holt Winters Exponential Smothing Model##
+Gas_change_forecast<-HoltWinters(Change_of_Gas, gamma=TRUE)
+Gas_change_coeffs<-coefficients(Gas_change_forecast)
+plot(decompose(change_of_Gas), xlab="Revenue")
+autoplot(forecast(Gas_change_forecast,52), main="Revenue", xaxt="n", col="red", ylab="Weekly Change")
+points(change_of_Gas, col="blue", bg="gray", pch=10)
+change_final<-forecast(Gas_change_forecast, h=52)
+plot(change_final)
+autoplot(change_final, main="Exponential Smoothing Seasonal Model - Wkly Change")
+change_final
+
+##model 8##
+##NatGas change
+##ARIMA
+gas_change_timeseries_arima<-arima(Change_of_Gas, order=c(3,0,3))
+gas_change_timeseries_arima
+autoplot(gas_change_timeseries_arima)
+gas_change_timeseries_forecasts<-forecast(gas_change_timeseries_arima, h=52)
+autoplot(gas_change_timeseries_forecasts, main="ARIMA model - Wkly Change")
+gas_change_timeseries_forecasts
+
+##stochastic arima
+#second<-auto.arima(Change_of_Gas, d=1) 
+#secondsecond<-forecast(second, h=52)
+#secondsecond
+
+##model 9##
+##NatGas change
+##NNET
+change_model<-scan("change.csv")
+change_fit<-nnetar(change_model)
+change_finalfit<-forecast(change_fit, h=52)
+change_finalfit
+
+autoplot(forecast(change_finalfit), main="Neural Network Model-Weekly Change")
+
+
+##model 12##
+##final change_frame##
+change_frame<-data.frame(change_finalfit, gas_change_timeseries_forecasts, change_final)
+change_frame2<-data.frame(change_frame$Point.Forecast,change_frame$Point.Forecast.1, change_frame$Point.Forecast.2)
+change_frame2                      
+change_forecast<-rowMeans(change_frame2, na.rm = FALSE)
+change_forecast
+change_forecast2<-as.data.frame(change_forecast)
+change_forecast2
+
+
+##final results##########
+final_consolidation<-data.frame(price_forecast2, change_forecast2, volume_forecast2)
+colnames(final_consolidation) <- c("price", "change","volume")
+final_consolidation
