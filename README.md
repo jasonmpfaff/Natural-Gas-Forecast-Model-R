@@ -4,7 +4,7 @@
 Comes with robust set of visualizations.
 
 Core functionality is an ensemble of 3 approaches:
-1) Exponntial smoothing to weight in seasonality
+1) Expoenntial smoothing to weight in seasonality
 2) ARIMA model to weight towards a regressive approach to patterns in the time series
 3) Neural Netowrk model to abstract complex relationships between variables. 
 
